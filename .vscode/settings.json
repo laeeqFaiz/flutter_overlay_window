@@ -1,5 +1,6 @@
 {
-    "java.project.sourcePaths": [
-        "example/android"
-    ]
+  "java.project.sourcePaths": [
+    "example/android"
+  ],
+  "dart.flutterSdkPath": ".fvm/versions/3.44.0"
 }
