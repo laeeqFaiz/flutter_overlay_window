@@ -1,6 +1,5 @@
 package flutter.overlay.window.flutter_overlay_window;
 
-import android.app.Activity;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
@@ -11,6 +10,7 @@ import android.service.notification.StatusBarNotification;
 import android.util.Log;
 import android.view.WindowManager;
 
+import androidx.activity.ComponentActivity;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -39,7 +39,7 @@ public class FlutterOverlayWindowPlugin implements
 
     private MethodChannel channel;
     private Context context;
-    private Activity mActivity;
+    private ComponentActivity mActivity;
     private BasicMessageChannel<Object> messenger;
     private Result pendingResult;
     private ActivityResultLauncher<Intent> overlayPermissionLauncher;
@@ -66,8 +66,14 @@ public class FlutterOverlayWindowPlugin implements
         } else if (call.method.equals("requestPermission")) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
-                intent.setData(Uri.parse("package:" + mActivity.getPackageName()));
-                overlayPermissionLauncher.launch(intent);
+                intent.setData(Uri.parse("package:" + context.getPackageName()));
+                if (mActivity != null) {
+                    overlayPermissionLauncher.launch(intent);
+                } else {
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    context.startActivity(intent);
+                    result.success(checkOverlayPermission());
+                }
             } else {
                 result.success(true);
             }
@@ -141,7 +147,7 @@ public class FlutterOverlayWindowPlugin implements
 
     @Override
     public void onAttachedToActivity(@NonNull ActivityPluginBinding binding) {
-        mActivity = binding.getActivity();
+        mActivity = (ComponentActivity) binding.getActivity();
         overlayPermissionLauncher = mActivity.registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
