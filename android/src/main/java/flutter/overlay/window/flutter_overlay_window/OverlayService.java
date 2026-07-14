@@ -78,7 +78,6 @@ public class OverlayService extends Service implements View.OnTouchListener {
         return null;
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public void onDestroy() {
         Log.d("OverLay", "Destroying the overlay window service");
@@ -94,9 +93,11 @@ public class OverlayService extends Service implements View.OnTouchListener {
         instance = null;
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        if (intent == null) {
+            return START_REDELIVER_INTENT;
+        }
         mResources = getApplicationContext().getResources();
         int startX = intent.getIntExtra("startX", OverlayConstants.DEFAULT_XY);
         int startY = intent.getIntExtra("startY", OverlayConstants.DEFAULT_XY);
@@ -177,7 +178,7 @@ public class OverlayService extends Service implements View.OnTouchListener {
         flutterView.setOnTouchListener(this);
         windowManager.addView(flutterView, params);
         moveOverlay(dx, dy, null);
-        return START_STICKY;
+        return START_REDELIVER_INTENT;
     }
 
 
