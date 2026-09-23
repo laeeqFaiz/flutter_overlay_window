@@ -64,7 +64,7 @@ public class FlutterOverlayWindowPlugin implements
         if (call.method.equals("checkPermission")) {
             result.success(checkOverlayPermission());
         } else if (call.method.equals("requestPermission")) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
                 intent.setData(Uri.parse("package:" + context.getPackageName()));
                 if (mActivity != null) {
@@ -150,12 +150,7 @@ public class FlutterOverlayWindowPlugin implements
         mActivity = (ComponentActivity) binding.getActivity();
         overlayPermissionLauncher = mActivity.registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
-                result -> {
-                    if (pendingResult != null) {
-                        pendingResult.success(checkOverlayPermission());
-                        pendingResult = null;
-                    }
-                }
+                result -> completeOverlayPermissionRequest()
         );
         if (FlutterEngineCache.getInstance().get(OverlayConstants.CACHED_TAG) == null) {
             FlutterEngineGroup enn = new FlutterEngineGroup(context);
@@ -204,6 +199,13 @@ public class FlutterOverlayWindowPlugin implements
             return Settings.canDrawOverlays(context);
         }
         return true;
+    }
+
+    void completeOverlayPermissionRequest() {
+        if (pendingResult != null) {
+            pendingResult.success(checkOverlayPermission());
+            pendingResult = null;
+        }
     }
 
 }
